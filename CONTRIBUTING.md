@@ -1,5 +1,5 @@
 <!--
-Copyright (c) 2017 YCSB contributors.
+Copyright (c) 2010 Yahoo! Inc., 2018 YCSB contributors.
 All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you
@@ -31,7 +31,7 @@ YCSB is licensed under the Apache License, Version 2.0 (APL2). Every file includ
 
 ```java
 /**
- * Copyright (c) 2015-2017 YCSB contributors. All rights reserved.
+ * Copyright (c) 2018-2018 YCSB contributors. All rights reserved.
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); you
  * may not use this file except in compliance with the License. You
@@ -45,7 +45,7 @@ YCSB is licensed under the Apache License, Version 2.0 (APL2). Every file includ
  * implied. See the License for the specific language governing
  * permissions and limitations under the License. See accompanying
  * LICENSE file.
- */ 
+ */
 ```
 
 When modifying files that already have a license header, please update the year when you made your edits. E.g. change ``Copyright (c) 2010 Yahoo! Inc., 2012 - 2016 YCSB contributors.`` to ``Copyright (c) 2010 Yahoo! Inc., 2012 - 2017 YCSB contributors.`` If the file only has ``Copyright (c) 2010 Yahoo! Inc.``, append the current year as in ``Copyright (c) 2010 Yahoo! Inc., 2017 YCSB contributors.``.
@@ -89,7 +89,7 @@ You've written some amazing code and are excited to share it with the community!
 * Commit the code and start the commit message with the component you are working on in square braces. E.g. ``[core] Add another format for exporting histograms.`` or ``[hbase12] Fix interrupted exception bug.``.
 * Push to your fork and click the ``Create Pull Request`` button.
 * Wait for the build to complete in the CI pipeline. If it fails with a red X, click through the logs for details and fix any issues and commit your changes.
-* If you have made changes, please flatten the commits so that the commit logs are nice and clean. Just run a ``git rebase -i <hash before your first commit>``. 
+* If you have made changes, please flatten the commits so that the commit logs are nice and clean. Just run a ``git rebase -i <hash before your first commit>``.
 
 After you have opened your PR, a YCSB maintainer will review it and offer constructive feedback via the GitHub review feature. If no one has responded to your PR, please bump the thread by adding comments.
 
@@ -106,7 +106,7 @@ When working on the core classes, keep in mind the following:
 * Do not remove or modify measurements. Users may have tooling to parse the outputs so if you take something out, they'll be a wee bit unhappy. Extending or adding measurements is fine (so if you do have tooling, expect additions.)
 * Do not modify existing generators. Again we don't want to invalidate years of benchmarks. Instead, create a new generator or option that can be enabled explicitly (not implicitly!) for users to try out.
 * Utility classes and methods are welcome. But if they're only ever used by a specific database binding, co-locate the code with that binding.
-* Don't change the DB interface if at all possible. Implementations can squeeze all kinds of workloads through the existing interface and while it may be easy to change the bindings included with the source code, some users may have private clients they can't share with the community. 
+* Don't change the DB interface if at all possible. Implementations can squeeze all kinds of workloads through the existing interface and while it may be easy to change the bindings included with the source code, some users may have private clients they can't share with the community.
 
 ### Bindings and Clients
 
