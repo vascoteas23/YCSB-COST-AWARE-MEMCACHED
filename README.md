@@ -75,3 +75,4 @@ To build the full distribution, with all database bindings:
 To build a single database binding:
 
     mvn -pl com.yahoo.ycsb:mongodb-binding -am clean package
+# YCSB-COST-AWARE-MEMCACHED
