@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.Vector;
 
@@ -206,9 +207,11 @@ public class MemcachedClient extends DB {
   public Status update(
       String table, String key, Map<String, ByteIterator> values) {
     key = createQualifiedKey(table, key);
+    Random rand = new Random();
+    int cost = rand.nextInt(1000);
     try {
       OperationFuture<Boolean> future =
-          memcachedClient().replace(key, objectExpirationTime, toJson(values));
+          memcachedClient().replace(key, cost, objectExpirationTime, toJson(values));
       return getReturnCode(future);
     } catch (Exception e) {
       logger.error("Error updating value with key: " + key, e);
@@ -220,9 +223,11 @@ public class MemcachedClient extends DB {
   public Status insert(
       String table, String key, Map<String, ByteIterator> values) {
     key = createQualifiedKey(table, key);
+    Random rand = new Random();
+    int cost = rand.nextInt(1000);
     try {
       OperationFuture<Boolean> future =
-          memcachedClient().add(key, objectExpirationTime, toJson(values));
+          memcachedClient().add(key, cost, objectExpirationTime, toJson(values));
       return getReturnCode(future);
     } catch (Exception e) {
       logger.error("Error inserting value", e);
@@ -286,7 +291,7 @@ public class MemcachedClient extends DB {
       }
     }
   }
-
+  @SuppressWarnings("checkstyle:methodlength")
   protected static String toJson(Map<String, ByteIterator> values)
       throws IOException {
     ObjectNode node = MAPPER.createObjectNode();
