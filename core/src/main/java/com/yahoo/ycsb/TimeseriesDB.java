@@ -107,7 +107,7 @@ public abstract class TimeseriesDB extends DB {
   }
 
   @Override
-  public final Status read(String table, String key, Set<String> fields, Map<String, ByteIterator> result) {
+  public final Status read(String table, String key, Set<String> fields, Map<String, ByteIterator> result, int cost) {
     Map<String, List<String>> tagQueries = new HashMap<>();
     Long timestamp = null;
     for (String field : fields) {
@@ -128,7 +128,7 @@ public abstract class TimeseriesDB extends DB {
       return Status.BAD_REQUEST;
     }
 
-    return read(table, timestamp, tagQueries);
+    return read(table, timestamp, tagQueries, cost);
   }
 
   /**
@@ -139,7 +139,7 @@ public abstract class TimeseriesDB extends DB {
    * @param tags      actual tags that were want to receive (can be empty)
    * @return Zero on success, a non-zero error code on error or "not found".
    */
-  protected abstract Status read(String metric, long timestamp, Map<String, List<String>> tags);
+  protected abstract Status read(String metric, long timestamp, Map<String, List<String>> tags, int cost);
 
   /**
    * @inheritDoc
@@ -148,7 +148,7 @@ public abstract class TimeseriesDB extends DB {
    */
   @Override
   public final Status scan(String table, String startkey, int recordcount, Set<String> fields,
-                           Vector<HashMap<String, ByteIterator>> result) {
+                           Vector<HashMap<String, ByteIterator>> result, int cost) {
     Map<String, List<String>> tagQueries = new HashMap<>();
     TimeseriesDB.AggregationOperation aggregationOperation = TimeseriesDB.AggregationOperation.NONE;
     Set<String> groupByFields = new HashSet<>();
@@ -213,20 +213,20 @@ public abstract class TimeseriesDB extends DB {
                                  AggregationOperation aggreg, int timeValue, TimeUnit timeUnit);
 
   @Override
-  public Status update(String table, String key, Map<String, ByteIterator> values) {
+  public Status update(String table, String key, Map<String, ByteIterator> values, int cost) {
     return Status.NOT_IMPLEMENTED;
     // not supportable for general TSDBs
     // can be explicitly overwritten in inheriting classes
   }
 
   @Override
-  public final Status insert(String table, String key, Map<String, ByteIterator> values) {
+  public final Status insert(String table, String key, Map<String, ByteIterator> values, int cost) {
     NumericByteIterator tsContainer = (NumericByteIterator) values.remove(timestampKey);
     NumericByteIterator valueContainer = (NumericByteIterator) values.remove(valueKey);
     if (valueContainer.isFloatingPoint()) {
-      return insert(table, tsContainer.getLong(), valueContainer.getDouble(), values);
+      return insert(table, tsContainer.getLong(), valueContainer.getDouble(), values,cost);
     } else {
-      return insert(table, tsContainer.getLong(), valueContainer.getLong(), values);
+      return insert(table, tsContainer.getLong(), valueContainer.getLong(), values,cost);
     }
   }
 
@@ -240,7 +240,7 @@ public abstract class TimeseriesDB extends DB {
    * @param tags      A Map of tag/tagvalue pairs to insert as tags
    * @return A {@link Status} detailing the outcome of the insert
    */
-  protected abstract Status insert(String metric, long timestamp, long value, Map<String, ByteIterator> tags);
+  protected abstract Status insert(String metric, long timestamp, long value, Map<String, ByteIterator> tags, int cost);
 
   /**
    * Insert a record in the database. Any tags/tagvalue pairs in the specified tagmap and the given value will be
@@ -252,7 +252,7 @@ public abstract class TimeseriesDB extends DB {
    * @param tags      A HashMap of tag/tagvalue pairs to insert as tags
    * @return A {@link Status} detailing the outcome of the insert
    */
-  protected abstract Status insert(String metric, long timestamp, double value, Map<String, ByteIterator> tags);
+  protected abstract Status insert(String metric, long timestamp, double value, Map<String, ByteIterator> tags, int cost);
 
   /**
    * NOTE: This operation is usually <b>not</b> supported for Time-Series databases.
@@ -261,7 +261,7 @@ public abstract class TimeseriesDB extends DB {
    * @return Status.NOT_IMPLEMENTED or a {@link Status} specifying the outcome of deletion
    * in case the operation is supported.
    */
-  public Status delete(String table, String key) {
+  public Status delete(String table, String key, int cost) {
     return Status.NOT_IMPLEMENTED;
   }
 

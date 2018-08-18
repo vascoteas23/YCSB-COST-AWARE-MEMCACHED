@@ -191,7 +191,7 @@ public class RestWorkload extends CoreWorkload {
   }
 
   protected static NumberGenerator getFieldLengthGenerator(Properties p) throws WorkloadException {
-    // Re-using CoreWorkload method. 
+    // Re-using CoreWorkload method.
     NumberGenerator fieldLengthGenerator = CoreWorkload.getFieldLengthGenerator(p);
     String fieldlengthdistribution = p.getProperty(FIELD_LENGTH_DISTRIBUTION_PROPERTY,
         FIELD_LENGTH_DISTRIBUTION_PROPERTY_DEFAULT);
@@ -248,16 +248,16 @@ public class RestWorkload extends CoreWorkload {
 
     switch (operation) {
     case "UPDATE":
-      doTransactionUpdate(db);
+      doTransactionUpdate(db,0);
       break;
     case "INSERT":
-      doTransactionInsert(db);
+      doTransactionInsert(db,0);
       break;
     case "DELETE":
-      doTransactionDelete(db);
+      doTransactionDelete(db,0);
       break;
     default:
-      doTransactionRead(db);
+      doTransactionRead(db,0);
     }
     return true;
   }
@@ -278,29 +278,29 @@ public class RestWorkload extends CoreWorkload {
   }
 
   @Override
-  public void doTransactionRead(DB db) {
+  public void doTransactionRead(DB db,int cost) {
     HashMap<String, ByteIterator> result = new HashMap<String, ByteIterator>();
-    db.read(null, getNextURL(1), null, result);
+    db.read(null, getNextURL(1), null, result,cost);
   }
 
   @Override
-  public void doTransactionInsert(DB db) {
+  public void doTransactionInsert(DB db,int cost) {
     HashMap<String, ByteIterator> value = new HashMap<String, ByteIterator>();
     // Create random bytes of insert data with a specific size.
     value.put("data", new RandomByteIterator(fieldlengthgenerator.nextValue().longValue()));
-    db.insert(null, getNextURL(2), value);
+    db.insert(null, getNextURL(2), value,cost);
   }
 
-  public void doTransactionDelete(DB db) {
-    db.delete(null, getNextURL(3));
+  public void doTransactionDelete(DB db,int cost) {
+    db.delete(null, getNextURL(3),cost);
   }
 
   @Override
-  public void doTransactionUpdate(DB db) {
+  public void doTransactionUpdate(DB db,int cost) {
     HashMap<String, ByteIterator> value = new HashMap<String, ByteIterator>();
     // Create random bytes of update data with a specific size.
     value.put("data", new RandomByteIterator(fieldlengthgenerator.nextValue().longValue()));
-    db.update(null, getNextURL(4), value);
+    db.update(null, getNextURL(4), value,cost);
   }
 
 }

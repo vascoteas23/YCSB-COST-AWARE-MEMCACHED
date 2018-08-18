@@ -181,7 +181,7 @@ public class MemcachedClient extends DB {
   @Override
   public Status read(
       String table, String key, Set<String> fields,
-      Map<String, ByteIterator> result) {
+      Map<String, ByteIterator> result,int cost) {
     key = createQualifiedKey(table, key);
     try {
       GetFuture<Object> future = memcachedClient().asyncGet(key);
@@ -199,16 +199,16 @@ public class MemcachedClient extends DB {
   @Override
   public Status scan(
       String table, String startkey, int recordcount, Set<String> fields,
-      Vector<HashMap<String, ByteIterator>> result){
+      Vector<HashMap<String, ByteIterator>> result,int cost){
     return Status.NOT_IMPLEMENTED;
   }
 
   @Override
   public Status update(
-      String table, String key, Map<String, ByteIterator> values) {
+      String table, String key, Map<String, ByteIterator> values,int cost) {
+        System.out.println("REPLACE");
     key = createQualifiedKey(table, key);
     Random rand = new Random();
-    int cost = rand.nextInt(1000);
     try {
       OperationFuture<Boolean> future =
           memcachedClient().replace(key, cost, objectExpirationTime, toJson(values));
@@ -221,10 +221,10 @@ public class MemcachedClient extends DB {
 
   @Override
   public Status insert(
-      String table, String key, Map<String, ByteIterator> values) {
+      String table, String key, Map<String, ByteIterator> values,int cost) {
+        System.out.println("INSERT");
     key = createQualifiedKey(table, key);
     Random rand = new Random();
-    int cost = rand.nextInt(1000);
     try {
       OperationFuture<Boolean> future =
           memcachedClient().add(key, cost, objectExpirationTime, toJson(values));
@@ -236,7 +236,7 @@ public class MemcachedClient extends DB {
   }
 
   @Override
-  public Status delete(String table, String key) {
+  public Status delete(String table, String key,int cost) {
     key = createQualifiedKey(table, key);
     try {
       OperationFuture<Boolean> future = memcachedClient().delete(key);

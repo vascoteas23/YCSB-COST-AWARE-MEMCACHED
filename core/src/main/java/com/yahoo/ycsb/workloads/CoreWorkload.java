@@ -34,7 +34,6 @@ import java.util.*;
  * <UL>
  * <LI><b>fieldcount</b>: the number of fields in a record (default: 10)
  * <LI><b>fieldlength</b>: the size of each field (default: 100)
- * <LI><b>minfieldlength</b>: the minimum size of each field (default: 1)
  * <LI><b>readallfields</b>: should reads read all fields (true) or just one (false) (default: true)
  * <LI><b>writeallfields</b>: should updates and read/modify/writes update all fields (true) or just
  * one (false) (default: false)
@@ -46,7 +45,6 @@ import java.util.*;
  * modify it, write it back (default: 0)
  * <LI><b>requestdistribution</b>: what distribution should be used to select the records to operate
  * on - uniform, zipfian, hotspot, sequential, exponential or latest (default: uniform)
- * <LI><b>minscanlength</b>: for scans, what is the minimum number of records to scan (default: 1)
  * <LI><b>maxscanlength</b>: for scans, what is the maximum number of records to scan (default: 1000)
  * <LI><b>scanlengthdistribution</b>: for scans, what distribution should be used to choose the
  * number of records to scan, for each scan, between 1 and maxscanlength (default: uniform)
@@ -85,7 +83,7 @@ public class CoreWorkload extends Workload {
    * Default number of fields in a record.
    */
   public static final String FIELD_COUNT_PROPERTY_DEFAULT = "10";
-  
+
   private List<String> fieldnames;
 
   /**
@@ -112,16 +110,6 @@ public class CoreWorkload extends Workload {
    * The default maximum length of a field in bytes.
    */
   public static final String FIELD_LENGTH_PROPERTY_DEFAULT = "100";
-
-  /**
-   * The name of the property for the minimum length of a field in bytes.
-   */
-  public static final String MIN_FIELD_LENGTH_PROPERTY = "minfieldlength";
-
-  /**
-   * The default minimum length of a field in bytes.
-   */
-  public static final String MIN_FIELD_LENGTH_PROPERTY_DEFAULT = "1";
 
   /**
    * The name of a property that specifies the filename containing the field length histogram (only
@@ -182,6 +170,18 @@ public class CoreWorkload extends Workload {
    * be set to true during loading phase to function.
    */
   private boolean dataintegrity;
+
+  public static final String LOW_PROPORTION_PROPERTY = "lowproportion";
+
+  public static final String LOW_PROPORTION_PROPERTY_DEFAULT = "0.8";
+
+  public static final String MEDIUM_PROPORTION_PROPERTY = "mediumproportion";
+
+  public static final String MEDIUM_PROPORTION_PROPERTY_DEFAULT = "0.1";
+
+  public static final String HIGH_PROPORTION_PROPERTY = "highproportion";
+
+  public static final String HIGH_PROPORTION_PROPERTY_DEFAULT = "0.1";
 
   /**
    * The name of the property for the proportion of transactions that are reads.
@@ -257,16 +257,6 @@ public class CoreWorkload extends Workload {
 
 
   /**
-   * The name of the property for the min scan length (number of records).
-   */
-  public static final String MIN_SCAN_LENGTH_PROPERTY = "minscanlength";
-
-  /**
-   * The default min scan length.
-   */
-  public static final String MIN_SCAN_LENGTH_PROPERTY_DEFAULT = "1";
-
-  /**
    * The name of the property for the max scan length (number of records).
    */
   public static final String MAX_SCAN_LENGTH_PROPERTY = "maxscanlength";
@@ -331,6 +321,7 @@ public class CoreWorkload extends Workload {
 
   protected NumberGenerator keysequence;
   protected DiscreteGenerator operationchooser;
+  protected DiscreteGenerator costdistributionchooser;
   protected NumberGenerator keychooser;
   protected NumberGenerator fieldchooser;
   protected AcknowledgedCounterGenerator transactioninsertkeysequence;
@@ -341,6 +332,9 @@ public class CoreWorkload extends Workload {
   protected int zeropadding;
   protected int insertionRetryLimit;
   protected int insertionRetryInterval;
+  protected UniformIntGenerator low = new UniformIntGenerator(10, 30);
+  protected UniformIntGenerator medium = new UniformIntGenerator(120, 180);
+  protected UniformIntGenerator high = new UniformIntGenerator(350, 450);
 
   private Measurements measurements = Measurements.getMeasurements();
 
@@ -350,16 +344,14 @@ public class CoreWorkload extends Workload {
         FIELD_LENGTH_DISTRIBUTION_PROPERTY, FIELD_LENGTH_DISTRIBUTION_PROPERTY_DEFAULT);
     int fieldlength =
         Integer.parseInt(p.getProperty(FIELD_LENGTH_PROPERTY, FIELD_LENGTH_PROPERTY_DEFAULT));
-    int minfieldlength =
-        Integer.parseInt(p.getProperty(MIN_FIELD_LENGTH_PROPERTY, MIN_FIELD_LENGTH_PROPERTY_DEFAULT));
     String fieldlengthhistogram = p.getProperty(
         FIELD_LENGTH_HISTOGRAM_FILE_PROPERTY, FIELD_LENGTH_HISTOGRAM_FILE_PROPERTY_DEFAULT);
     if (fieldlengthdistribution.compareTo("constant") == 0) {
       fieldlengthgenerator = new ConstantIntegerGenerator(fieldlength);
     } else if (fieldlengthdistribution.compareTo("uniform") == 0) {
-      fieldlengthgenerator = new UniformLongGenerator(minfieldlength, fieldlength);
+      fieldlengthgenerator = new UniformLongGenerator(1, fieldlength);
     } else if (fieldlengthdistribution.compareTo("zipfian") == 0) {
-      fieldlengthgenerator = new ZipfianGenerator(minfieldlength, fieldlength);
+      fieldlengthgenerator = new ZipfianGenerator(1, fieldlength);
     } else if (fieldlengthdistribution.compareTo("histogram") == 0) {
       try {
         fieldlengthgenerator = new HistogramGenerator(fieldlengthhistogram);
@@ -397,8 +389,6 @@ public class CoreWorkload extends Workload {
     }
     String requestdistrib =
         p.getProperty(REQUEST_DISTRIBUTION_PROPERTY, REQUEST_DISTRIBUTION_PROPERTY_DEFAULT);
-    int minscanlength =
-        Integer.parseInt(p.getProperty(MIN_SCAN_LENGTH_PROPERTY, MIN_SCAN_LENGTH_PROPERTY_DEFAULT));
     int maxscanlength =
         Integer.parseInt(p.getProperty(MAX_SCAN_LENGTH_PROPERTY, MAX_SCAN_LENGTH_PROPERTY_DEFAULT));
     String scanlengthdistrib =
@@ -449,6 +439,7 @@ public class CoreWorkload extends Workload {
 
     keysequence = new CounterGenerator(insertstart);
     operationchooser = createOperationGenerator(p);
+    costdistributionchooser = createCostDistributionGenerator(p);
 
     transactioninsertkeysequence = new AcknowledgedCounterGenerator(recordcount);
     if (requestdistrib.compareTo("uniform") == 0) {
@@ -487,9 +478,9 @@ public class CoreWorkload extends Workload {
     fieldchooser = new UniformLongGenerator(0, fieldcount - 1);
 
     if (scanlengthdistrib.compareTo("uniform") == 0) {
-      scanlength = new UniformLongGenerator(minscanlength, maxscanlength);
+      scanlength = new UniformLongGenerator(1, maxscanlength);
     } else if (scanlengthdistrib.compareTo("zipfian") == 0) {
-      scanlength = new ZipfianGenerator(minscanlength, maxscanlength);
+      scanlength = new ZipfianGenerator(1, maxscanlength);
     } else {
       throw new WorkloadException(
           "Distribution \"" + scanlengthdistrib + "\" not allowed for scan length");
@@ -581,11 +572,12 @@ public class CoreWorkload extends Workload {
     int keynum = keysequence.nextValue().intValue();
     String dbkey = buildKeyName(keynum);
     HashMap<String, ByteIterator> values = buildValues(dbkey);
+    int cost = costGen();
 
     Status status;
     int numOfRetries = 0;
     do {
-      status = db.insert(table, dbkey, values);
+      status = db.insert(table, dbkey, values, cost);
       if (null != status && status.isOk()) {
         break;
       }
@@ -613,6 +605,34 @@ public class CoreWorkload extends Workload {
     return null != status && status.isOk();
   }
 
+  public int costGen() {
+	  String costdistribution = costdistributionchooser.nextString();
+	    int cost = 0;
+
+	    if(costdistribution == null) {
+	    	System.exit(0);
+	    }
+
+	    switch (costdistribution) {
+		case "LOW":
+			cost = low.nextIntValue();
+			break;
+		case "MEDIUM":
+			cost = medium.nextIntValue();
+			break;
+		case "HIGH":
+			cost = high.nextIntValue();
+		break;
+		}
+
+	    if(cost == 0) {
+	    	System.exit(0);
+	    }
+      System.out.println(cost);
+	    return cost;
+
+  }
+
   /**
    * Do one transaction operation. Because it will be called concurrently from multiple client
    * threads, this function must be thread safe. However, avoid synchronized, or the threads will block waiting
@@ -622,25 +642,30 @@ public class CoreWorkload extends Workload {
   @Override
   public boolean doTransaction(DB db, Object threadstate) {
     String operation = operationchooser.nextString();
+    String costdistribution = costdistributionchooser.nextString();
+    int cost;
+
     if(operation == null) {
       return false;
     }
 
+    cost = costGen();
+
     switch (operation) {
     case "READ":
-      doTransactionRead(db);
+      doTransactionRead(db,cost);
       break;
     case "UPDATE":
-      doTransactionUpdate(db);
+      doTransactionUpdate(db,cost);
       break;
     case "INSERT":
-      doTransactionInsert(db);
+      doTransactionInsert(db,cost);
       break;
     case "SCAN":
-      doTransactionScan(db);
+      doTransactionScan(db,cost);
       break;
     default:
-      doTransactionReadModifyWrite(db);
+      doTransactionReadModifyWrite(db,cost);
     }
 
     return true;
@@ -686,7 +711,7 @@ public class CoreWorkload extends Workload {
     return keynum;
   }
 
-  public void doTransactionRead(DB db) {
+  public void doTransactionRead(DB db, int cost) {
     // choose a random key
     long keynum = nextKeynum();
 
@@ -706,14 +731,14 @@ public class CoreWorkload extends Workload {
     }
 
     HashMap<String, ByteIterator> cells = new HashMap<String, ByteIterator>();
-    db.read(table, keyname, fields, cells);
+    db.read(table, keyname, fields, cells, cost);
 
     if (dataintegrity) {
       verifyRow(keyname, cells);
     }
   }
 
-  public void doTransactionReadModifyWrite(DB db) {
+  public void doTransactionReadModifyWrite(DB db, int cost) {
     // choose a random key
     long keynum = nextKeynum();
 
@@ -746,9 +771,9 @@ public class CoreWorkload extends Workload {
 
     long ist = measurements.getIntendedtartTimeNs();
     long st = System.nanoTime();
-    db.read(table, keyname, fields, cells);
+    db.read(table, keyname, fields, cells, cost);
 
-    db.update(table, keyname, values);
+    db.update(table, keyname, values, cost);
 
     long en = System.nanoTime();
 
@@ -760,7 +785,7 @@ public class CoreWorkload extends Workload {
     measurements.measureIntended("READ-MODIFY-WRITE", (int) ((en - ist) / 1000));
   }
 
-  public void doTransactionScan(DB db) {
+  public void doTransactionScan(DB db, int cost) {
     // choose a random key
     long keynum = nextKeynum();
 
@@ -779,10 +804,10 @@ public class CoreWorkload extends Workload {
       fields.add(fieldname);
     }
 
-    db.scan(table, startkeyname, len, fields, new Vector<HashMap<String, ByteIterator>>());
+    db.scan(table, startkeyname, len, fields, new Vector<HashMap<String, ByteIterator>>(), cost);
   }
 
-  public void doTransactionUpdate(DB db) {
+  public void doTransactionUpdate(DB db, int cost) {
     // choose a random key
     long keynum = nextKeynum();
 
@@ -798,10 +823,10 @@ public class CoreWorkload extends Workload {
       values = buildSingleValue(keyname);
     }
 
-    db.update(table, keyname, values);
+    db.update(table, keyname, values, cost);
   }
 
-  public void doTransactionInsert(DB db) {
+  public void doTransactionInsert(DB db, int cost) {
     // choose the next key
     long keynum = transactioninsertkeysequence.nextValue();
 
@@ -809,7 +834,7 @@ public class CoreWorkload extends Workload {
       String dbkey = buildKeyName(keynum);
 
       HashMap<String, ByteIterator> values = buildValues(dbkey);
-      db.insert(table, dbkey, values);
+      db.insert(table, dbkey, values, cost);
     } finally {
       transactioninsertkeysequence.acknowledge(keynum);
     }
@@ -842,19 +867,23 @@ public class CoreWorkload extends Workload {
 
     final DiscreteGenerator operationchooser = new DiscreteGenerator();
     if (readproportion > 0) {
+    	System.out.println("read " +readproportion);
       operationchooser.addValue(readproportion, "READ");
     }
 
     if (updateproportion > 0) {
       operationchooser.addValue(updateproportion, "UPDATE");
+      System.out.println("update " +updateproportion);
     }
 
     if (insertproportion > 0) {
       operationchooser.addValue(insertproportion, "INSERT");
+      System.out.println("insert " +insertproportion);
     }
 
     if (scanproportion > 0) {
       operationchooser.addValue(scanproportion, "SCAN");
+      System.out.println("scan " +scanproportion);
     }
 
     if (readmodifywriteproportion > 0) {
@@ -862,4 +891,40 @@ public class CoreWorkload extends Workload {
     }
     return operationchooser;
   }
+
+
+  protected static DiscreteGenerator createCostDistributionGenerator(final Properties p) {
+	    if (p == null) {
+	      throw new IllegalArgumentException("Properties object cannot be null");
+	    }
+
+	    final double lowcostdistribution = Double.parseDouble(
+	            p.getProperty(LOW_PROPORTION_PROPERTY, LOW_PROPORTION_PROPERTY_DEFAULT));
+
+	    final double mediumcostdistribution = Double.parseDouble(
+	            p.getProperty(MEDIUM_PROPORTION_PROPERTY, MEDIUM_PROPORTION_PROPERTY_DEFAULT));
+
+	    final double highcostdistribution = Double.parseDouble(
+	            p.getProperty(HIGH_PROPORTION_PROPERTY, HIGH_PROPORTION_PROPERTY_DEFAULT));
+
+	    final DiscreteGenerator costdistributionchooser = new DiscreteGenerator();
+
+	    if (lowcostdistribution > 0) {
+	    	System.out.println("low " +lowcostdistribution);
+	    	costdistributionchooser.addValue(lowcostdistribution, "LOW");
+	    }
+
+	    if (mediumcostdistribution > 0) {
+	    	costdistributionchooser.addValue(mediumcostdistribution, "MEDIUM");
+	      System.out.println("medium " +mediumcostdistribution);
+	    }
+
+	    if (highcostdistribution > 0) {
+	    	costdistributionchooser.addValue(highcostdistribution, "HIGH");
+	      System.out.println("high " +highcostdistribution);
+	    }
+
+	    return costdistributionchooser;
+	  }
+
 }

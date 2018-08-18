@@ -95,7 +95,7 @@ public class GoodBadUglyDB extends DB {
    * @param result A HashMap of field/value pairs for the result
    * @return Zero on success, a non-zero error code on error
    */
-  public Status read(String table, String key, Set<String> fields, Map<String, ByteIterator> result) {
+  public Status read(String table, String key, Set<String> fields, Map<String, ByteIterator> result, int cost) {
     delay();
     return Status.OK;
   }
@@ -112,7 +112,7 @@ public class GoodBadUglyDB extends DB {
    * @return Zero on success, a non-zero error code on error
    */
   public Status scan(String table, String startkey, int recordcount, Set<String> fields,
-                     Vector<HashMap<String, ByteIterator>> result) {
+                     Vector<HashMap<String, ByteIterator>> result, int cost) {
     delay();
 
     return Status.OK;
@@ -127,7 +127,7 @@ public class GoodBadUglyDB extends DB {
    * @param values A HashMap of field/value pairs to update in the record
    * @return Zero on success, a non-zero error code on error
    */
-  public Status update(String table, String key, Map<String, ByteIterator> values) {
+  public Status update(String table, String key, Map<String, ByteIterator> values, int cost) {
     delay();
 
     return Status.OK;
@@ -142,7 +142,7 @@ public class GoodBadUglyDB extends DB {
    * @param values A HashMap of field/value pairs to insert in the record
    * @return Zero on success, a non-zero error code on error
    */
-  public Status insert(String table, String key, Map<String, ByteIterator> values) {
+  public Status insert(String table, String key, Map<String, ByteIterator> values, int cost) {
     delay();
     return Status.OK;
   }
@@ -154,7 +154,7 @@ public class GoodBadUglyDB extends DB {
    * @param key The record key of the record to delete.
    * @return Zero on success, a non-zero error code on error
    */
-  public Status delete(String table, String key) {
+  public Status delete(String table, String key, int cost) {
     delay();
     return Status.OK;
   }

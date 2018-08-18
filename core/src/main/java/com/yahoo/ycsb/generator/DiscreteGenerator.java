@@ -84,6 +84,7 @@ public class DiscreteGenerator extends Generator<String> {
   }
 
   public void addValue(double weight, String value) {
+    System.out.println("weight: " + weight + " value: " + value);
     values.add(new Pair(weight, value));
   }
 

@@ -38,8 +38,8 @@ import java.util.Vector;
  * methods commit, and some systems may return 'success' regardless of whether
  * or not a tuple with a matching key existed before the call.  Rather than dictate
  * the exact semantics of these methods, we recommend you either implement them
- * to match the database's default semantics, or the semantics of your 
- * target application.  For the sake of comparison between experiments we also 
+ * to match the database's default semantics, or the semantics of your
+ * target application.  For the sake of comparison between experiments we also
  * recommend you explain the semantics you chose when presenting performance results.
  */
 public abstract class DB {
@@ -86,7 +86,7 @@ public abstract class DB {
    * @param result A HashMap of field/value pairs for the result
    * @return The result of the operation.
    */
-  public abstract Status read(String table, String key, Set<String> fields, Map<String, ByteIterator> result);
+  public abstract Status read(String table, String key, Set<String> fields, Map<String, ByteIterator> result, int cost);
 
   /**
    * Perform a range scan for a set of records in the database. Each field/value pair from the result will be stored
@@ -100,7 +100,7 @@ public abstract class DB {
    * @return The result of the operation.
    */
   public abstract Status scan(String table, String startkey, int recordcount, Set<String> fields,
-                              Vector<HashMap<String, ByteIterator>> result);
+                              Vector<HashMap<String, ByteIterator>> result, int cost);
 
   /**
    * Update a record in the database. Any field/value pairs in the specified values HashMap will be written into the
@@ -111,7 +111,7 @@ public abstract class DB {
    * @param values A HashMap of field/value pairs to update in the record
    * @return The result of the operation.
    */
-  public abstract Status update(String table, String key, Map<String, ByteIterator> values);
+  public abstract Status update(String table, String key, Map<String, ByteIterator> values, int cost);
 
   /**
    * Insert a record in the database. Any field/value pairs in the specified values HashMap will be written into the
@@ -122,7 +122,7 @@ public abstract class DB {
    * @param values A HashMap of field/value pairs to insert in the record
    * @return The result of the operation.
    */
-  public abstract Status insert(String table, String key, Map<String, ByteIterator> values);
+  public abstract Status insert(String table, String key, Map<String, ByteIterator> values, int cost);
 
   /**
    * Delete a record from the database.
@@ -131,5 +131,5 @@ public abstract class DB {
    * @param key The record key of the record to delete.
    * @return The result of the operation.
    */
-  public abstract Status delete(String table, String key);
+  public abstract Status delete(String table, String key, int cost);
 }
