@@ -1,7 +1,7 @@
 
 FROM maven:3.5.4-jdk-9
 
-VOLUME ./YCSB/
+VOLUME /YCSB/:/home/YSCB
 
 RUN mkdir -p /local/git
 WORKDIR /local/git
@@ -11,9 +11,9 @@ WORKDIR /local/git
 
 MAINTAINER Izzet Mustafaiev "izzet@mustafaiev.com"
 
-RUN apt-get update -y
-RUN apt-get install curl wget -y
-RUN apt-get install git -y
+#RUN apt-get update -y
+#RUN apt-get install curl wget -y
+#RUN apt-get install git -y
 #RUN curl -O --location https://github.com/brianfrankcooper/YCSB/releases/download/0.12.0/ycsb-0.12.0.tar.gz
 #RUN tar xfvz ycsb-0.12.0.tar.gz
 
