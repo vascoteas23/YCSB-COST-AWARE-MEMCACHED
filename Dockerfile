@@ -1,7 +1,7 @@
 
 FROM maven:3.5.4-jdk-9
 
-VOLUME /YCSB/:/home/YSCB
+#VOLUME /YCSB/:/home/YSCB
 
 RUN mkdir -p /local/git
 WORKDIR /local/git
