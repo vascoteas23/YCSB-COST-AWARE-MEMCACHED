@@ -1,6 +1,7 @@
 
 FROM maven:3.5.4-jdk-9
 
+VOLUME ./YCSB/
 
 RUN mkdir -p /local/git
 WORKDIR /local/git
@@ -18,6 +19,8 @@ RUN apt-get install git -y
 
 RUN apt-get install -y python python-dev python-pip python-virtualenv 
 RUN rm -rf /var/lib/apt/lists/*
+
+
 
 CMD ["/bin/bash"]
 #ENV DEBIAN_FRONTEND noninteractive
