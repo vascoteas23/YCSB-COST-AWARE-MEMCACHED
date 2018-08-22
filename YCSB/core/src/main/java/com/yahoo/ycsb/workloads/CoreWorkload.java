@@ -609,9 +609,9 @@ public class CoreWorkload extends Workload {
 	  String costdistribution = costdistributionchooser.nextString();
 	    int cost = 0;
 
-	    if(costdistribution == null) {
-	    	System.exit(0);
-	    }
+	  //  if(costdistribution == null) {
+	  //  	System.exit(0);
+	  //  }
 
 	    switch (costdistribution) {
 		case "LOW":
@@ -625,10 +625,10 @@ public class CoreWorkload extends Workload {
 		break;
 		}
 
-	    if(cost == 0) {
-	    	System.exit(0);
-	    }
-      System.out.println(cost);
+	 //   if(cost == 0) {
+	 //   	System.exit(0);
+	 //   }
+    //  System.out.println(cost);
 	    return cost;
 
   }
@@ -867,23 +867,23 @@ public class CoreWorkload extends Workload {
 
     final DiscreteGenerator operationchooser = new DiscreteGenerator();
     if (readproportion > 0) {
-    	System.out.println("read " +readproportion);
+    //	System.out.println("read " +readproportion);
       operationchooser.addValue(readproportion, "READ");
     }
 
     if (updateproportion > 0) {
       operationchooser.addValue(updateproportion, "UPDATE");
-      System.out.println("update " +updateproportion);
+  //    System.out.println("update " +updateproportion);
     }
 
     if (insertproportion > 0) {
       operationchooser.addValue(insertproportion, "INSERT");
-      System.out.println("insert " +insertproportion);
+  //    System.out.println("insert " +insertproportion);
     }
 
     if (scanproportion > 0) {
       operationchooser.addValue(scanproportion, "SCAN");
-      System.out.println("scan " +scanproportion);
+    //  System.out.println("scan " +scanproportion);
     }
 
     if (readmodifywriteproportion > 0) {
@@ -910,18 +910,18 @@ public class CoreWorkload extends Workload {
 	    final DiscreteGenerator costdistributionchooser = new DiscreteGenerator();
 
 	    if (lowcostdistribution > 0) {
-	    	System.out.println("low " +lowcostdistribution);
+	    //	System.out.println("low " +lowcostdistribution);
 	    	costdistributionchooser.addValue(lowcostdistribution, "LOW");
 	    }
 
 	    if (mediumcostdistribution > 0) {
 	    	costdistributionchooser.addValue(mediumcostdistribution, "MEDIUM");
-	      System.out.println("medium " +mediumcostdistribution);
+	   //   System.out.println("medium " +mediumcostdistribution);
 	    }
 
 	    if (highcostdistribution > 0) {
 	    	costdistributionchooser.addValue(highcostdistribution, "HIGH");
-	      System.out.println("high " +highcostdistribution);
+//System.out.println("high " +highcostdistribution);
 	    }
 
 	    return costdistributionchooser;
