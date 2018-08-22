@@ -9,7 +9,7 @@ WORKDIR /local/git
 # run terminal
 
 
-MAINTAINER Izzet Mustafaiev "izzet@mustafaiev.com"
+#MAINTAINER Izzet Mustafaiev "izzet@mustafaiev.com"
 
 #RUN apt-get update -y
 #RUN apt-get install curl wget -y
@@ -17,8 +17,8 @@ MAINTAINER Izzet Mustafaiev "izzet@mustafaiev.com"
 #RUN curl -O --location https://github.com/brianfrankcooper/YCSB/releases/download/0.12.0/ycsb-0.12.0.tar.gz
 #RUN tar xfvz ycsb-0.12.0.tar.gz
 
-RUN apt-get install -y python python-dev python-pip python-virtualenv 
-RUN rm -rf /var/lib/apt/lists/*
+#RUN apt-get install -y python python-dev python-pip python-virtualenv 
+#RUN rm -rf /var/lib/apt/lists/*
 
 
 
