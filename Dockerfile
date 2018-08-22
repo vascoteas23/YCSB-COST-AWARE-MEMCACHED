@@ -1,7 +1,6 @@
 
 FROM maven:3.5.4-jdk-9
 
-#VOLUME /YCSB/:/home/YSCB
 
 RUN mkdir -p /local/git
 WORKDIR /local/git
@@ -9,18 +8,16 @@ WORKDIR /local/git
 # run terminal
 
 
-#MAINTAINER Izzet Mustafaiev "izzet@mustafaiev.com"
+MAINTAINER Izzet Mustafaiev "izzet@mustafaiev.com"
 
-#RUN apt-get update -y
-#RUN apt-get install curl wget -y
-#RUN apt-get install git -y
+RUN apt-get update -y
+RUN apt-get install curl wget -y
+RUN apt-get install git -y
 #RUN curl -O --location https://github.com/brianfrankcooper/YCSB/releases/download/0.12.0/ycsb-0.12.0.tar.gz
 #RUN tar xfvz ycsb-0.12.0.tar.gz
 
-#RUN apt-get install -y python python-dev python-pip python-virtualenv 
-#RUN rm -rf /var/lib/apt/lists/*
-
-
+RUN apt-get install -y python python-dev python-pip python-virtualenv 
+RUN rm -rf /var/lib/apt/lists/*
 
 CMD ["/bin/bash"]
 #ENV DEBIAN_FRONTEND noninteractive
